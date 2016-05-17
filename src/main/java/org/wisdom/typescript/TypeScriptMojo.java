@@ -165,8 +165,8 @@ public class TypeScriptMojo extends AbstractWisdomWatcherMojo implements Constan
 
     private void processAllFilesInDirectory(File dir) throws WatchingException {
         if (dir.isDirectory()) {
-            getLog().info("Compiling TypeScript files with 'tsc' from " + internalSources.getAbsolutePath());
-            Collection<File> files = FileUtils.listFiles(internalSources, new String[]{"ts"}, true);
+            getLog().info("Compiling TypeScript files with 'tsc' from " + dir.getAbsolutePath());
+            Collection<File> files = FileUtils.listFiles(dir, new String[]{"ts"}, true);
             for (File file : files) {
                 if (file.isFile()) {
                     process(file);
