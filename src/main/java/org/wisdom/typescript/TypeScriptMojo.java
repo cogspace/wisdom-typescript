@@ -84,7 +84,7 @@ public class TypeScriptMojo extends AbstractWisdomWatcherMojo implements Constan
     /**
      * The version of the TypeScript NPM to use.
      */
-    @Parameter(defaultValue = "1.5.0-beta")
+    @Parameter(defaultValue = "1.8.10")
     String version;
 
     /**
@@ -124,6 +124,12 @@ public class TypeScriptMojo extends AbstractWisdomWatcherMojo implements Constan
     @Parameter
     String target;
 
+    /**
+     * JSX code generation ("preserve" or "react")
+     */
+    @Parameter
+    String jsx;
+
     private NPM typescript;
 
     /**
@@ -143,27 +149,29 @@ public class TypeScriptMojo extends AbstractWisdomWatcherMojo implements Constan
         typescript = npm(this, TYPE_SCRIPT_NPM_NAME, version);
 
         try {
-            if (internalSources.isDirectory()) {
-                getLog().info("Compiling TypeScript files with 'tsc' from " + internalSources.getAbsolutePath());
-                Collection<File> files = FileUtils.listFiles(internalSources, new String[]{"ts"}, true);
-                for (File file : files) {
-                    if (file.isFile()) {
-                        process(file);
-                    }
-                }
-            }
-
-            if (externalSources.isDirectory()) {
-                getLog().info("Compiling TypeScript files with 'tsc' from " + externalSources.getAbsolutePath());
-                Collection<File> files = FileUtils.listFiles(externalSources, new String[]{"ts"}, true);
-                for (File file : files) {
-                    if (file.isFile()) {
-                        process(file);
-                    }
-                }
-            }
+            processAllFilesInDirectory(internalSources);
+            processAllFilesInDirectory(externalSources);
         } catch (WatchingException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Compile all *.ts files in a given directory.
+     *
+     * @param dir the directory to process files in
+     * @throws WatchingException if any of the files cannot be processed
+     */
+
+    private void processAllFilesInDirectory(File dir) throws WatchingException {
+        if (dir.isDirectory()) {
+            getLog().info("Compiling TypeScript files with 'tsc' from " + internalSources.getAbsolutePath());
+            Collection<File> files = FileUtils.listFiles(internalSources, new String[]{"ts"}, true);
+            for (File file : files) {
+                if (file.isFile()) {
+                    process(file);
+                }
+            }
         }
     }
 
@@ -274,6 +282,11 @@ public class TypeScriptMojo extends AbstractWisdomWatcherMojo implements Constan
         if (target != null) {
             arguments.add("--target");
             arguments.add(target);
+        }
+
+        if (jsx != null) {
+            arguments.add("--jsx");
+            arguments.add(jsx);
         }
 
         arguments.add("--out");
